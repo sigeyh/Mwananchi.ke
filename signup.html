@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signup - PESA TALA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-tr from-purple-900 via-purple-700 to-gray-300 min-h-screen flex items-center justify-center p-4 text-purple-900">
+
+  <div class="w-full max-w-sm bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-6">
+    <div class="text-center mb-6">
+      <img src="pesatala-logo.png" alt="PESA TALA Logo" class="w-16 h-16 mx-auto mb-2 rounded-full shadow" />
+      <h1 class="text-2xl font-bold">Sign Up</h1>
+      <p class="text-sm text-gray-600">Complete your profile to proceed</p>
+    </div>
+
+    <form onsubmit="goToConfirm(event)" class="space-y-4">
+
+      <input id="fullName" type="text" placeholder="Full Name" required
+        class="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500" />
+
+      <input id="email" type="email" placeholder="Email Address" required
+        class="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500" />
+
+      <input id="idNumber" type="text" placeholder="ID Number" required
+        class="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500" />
+
+      <input id="dob" type="text" placeholder="Date of Birth" onfocus="(this.type='date')" required
+        class="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500" />
+
+      <!-- Gender selection -->
+      <select id="gender" required
+        class="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <option value="">-- Select Gender --</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Prefer not to say">Prefer not to say</option>
+      </select>
+
+      <!-- County dropdown -->
+      <select id="county" required
+        class="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <option value="">-- Select Your County --</option>
+        <option value="Baringo">Baringo</option>
+        <option value="Bomet">Bomet</option>
+        <option value="Bungoma">Bungoma</option>
+        <option value="Busia">Busia</option>
+        <option value="Elgeyo-Marakwet">Elgeyo-Marakwet</option>
+        <option value="Embu">Embu</option>
+        <option value="Garissa">Garissa</option>
+        <option value="Homa Bay">Homa Bay</option>
+        <option value="Isiolo">Isiolo</option>
+        <option value="Kajiado">Kajiado</option>
+        <option value="Kakamega">Kakamega</option>
+        <option value="Kericho">Kericho</option>
+        <option value="Kiambu">Kiambu</option>
+        <option value="Kilifi">Kilifi</option>
+        <option value="Kirinyaga">Kirinyaga</option>
+        <option value="Kisii">Kisii</option>
+        <option value="Kisumu">Kisumu</option>
+        <option value="Kitui">Kitui</option>
+        <option value="Kwale">Kwale</option>
+        <option value="Laikipia">Laikipia</option>
+        <option value="Lamu">Lamu</option>
+        <option value="Machakos">Machakos</option>
+        <option value="Makueni">Makueni</option>
+        <option value="Mandera">Mandera</option>
+        <option value="Marsabit">Marsabit</option>
+        <option value="Meru">Meru</option>
+        <option value="Migori">Migori</option>
+        <option value="Mombasa">Mombasa</option>
+        <option value="Murang'a">Murang'a</option>
+        <option value="Nairobi">Nairobi</option>
+        <option value="Nakuru">Nakuru</option>
+        <option value="Nandi">Nandi</option>
+        <option value="Narok">Narok</option>
+        <option value="Nyamira">Nyamira</option>
+        <option value="Nyandarua">Nyandarua</option>
+        <option value="Nyeri">Nyeri</option>
+        <option value="Samburu">Samburu</option>
+        <option value="Siaya">Siaya</option>
+        <option value="Taita Taveta">Taita Taveta</option>
+        <option value="Tana River">Tana River</option>
+        <option value="Tharaka-Nithi">Tharaka-Nithi</option>
+        <option value="Trans Nzoia">Trans Nzoia</option>
+        <option value="Turkana">Turkana</option>
+        <option value="Uasin Gishu">Uasin Gishu</option>
+        <option value="Vihiga">Vihiga</option>
+        <option value="Wajir">Wajir</option>
+        <option value="West Pokot">West Pokot</option>
+      </select>
+
+      <input id="referee" type="text" placeholder="Referee Name (Optional)"
+        class="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500" />
+
+      <button type="submit"
+        class="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded-xl transition duration-300 shadow-lg">
+        Continue
+      </button>
+    </form>
+
+    <p class="text-sm text-center text-gray-600 mt-4">
+      Already have an account? <a href="login.html" class="text-purple-700 font-semibold underline">Login</a>
+    </p>
+  </div>
+
+  <script>
+    function goToConfirm(e) {
+      e.preventDefault();
+
+      // Collect form values
+      const fullName = document.getElementById('fullName').value;
+      const email = document.getElementById('email').value;
+      const idNumber = document.getElementById('idNumber').value;
+      const dob = document.getElementById('dob').value;
+      const gender = document.getElementById('gender').value;
+      const county = document.getElementById('county').value;
+      const referee = document.getElementById('referee').value;
+
+      // Store in localStorage
+      localStorage.setItem('fullName', fullName);
+      localStorage.setItem('email', email);
+      localStorage.setItem('idNumber', idNumber);
+      localStorage.setItem('dob', dob);
+      localStorage.setItem('gender', gender);
+      localStorage.setItem('county', county);
+      localStorage.setItem('referee', referee);
+
+      // Proceed
+      window.location.href = 'confirmdetails.html';
+    }
+  </script>
+
+</body>
+</html>

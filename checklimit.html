@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loan Limit - PESA TALA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-tr from-purple-900 via-purple-700 to-gray-200 min-h-screen p-4 text-purple-900 flex items-center justify-center">
+
+  <div class="bg-white/90 backdrop-blur-md max-w-sm w-full rounded-2xl shadow-2xl p-6 text-center">
+    <img src="pesatala-logo.png" alt="Logo" class="w-16 h-16 mx-auto mb-4 rounded-full shadow" />
+
+    <h2 class="text-xl font-bold mb-2">Loan Limit Check</h2>
+    <p class="text-sm text-gray-700 mb-4">Your eligible loan limit is ready. Adjust your amount below.</p>
+
+    <div class="mb-4">
+      <label class="block text-left font-medium text-sm mb-1">Loan Amount (Max: <span id="maxLimitText">...</span>)</label>
+      <input type="range" min="1000" max="5000" step="100" value="3000" id="loanSlider" class="w-full accent-purple-700" oninput="updateSlider(this.value)">
+      <div class="text-sm mt-1">Ksh <span id="loanAmountDisplay">...</span></div>
+    </div>
+
+    <div class="text-left text-sm mt-4 bg-purple-50 p-3 rounded-xl border border-purple-200">
+      <p><strong>Processing Fee:</strong> Ksh <span id="processingFeeDisplay">...</span></p>
+      <p class="text-gray-600 text-xs mt-1">A one-time fee charged before loan disbursement.</p>
+    </div>
+
+    <button onclick="saveAndShowPopup()" 
+      class="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded-xl shadow-md transition mt-6">
+      Continue
+    </button>
+  </div>
+
+  <!-- Confirmation Popup -->
+  <div id="popupOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white text-purple-900 rounded-2xl p-6 w-11/12 max-w-sm text-center shadow-xl relative">
+      <button onclick="closePopup()" class="absolute top-2 right-3 text-purple-700 font-bold text-xl">&times;</button>
+      <h2 class="text-xl font-bold mb-2">Congratulations!</h2>
+      <p class="text-sm mb-4">
+        Hi, <span id="popupUser">User</span><br>
+        Your loan of <strong>Ksh <span id="popupLoan">...</span></strong> is ready.<br>
+        Processing Fee: <strong>Ksh <span id="popupFee">...</span></strong><br>
+        Repayment period: <strong>14 days</strong>
+      </p>
+      <p class="text-xs text-gray-600 mb-4">
+        To proceed, <strong>HAKIKA R PROVISION</strong> requires you to make a one-time processing fee payment for your approved loan to your PESA TALA account.
+      </p>
+      <button onclick="window.location.href='verification.html'" 
+        class="bg-purple-700 hover:bg-purple-800 text-white py-2 px-6 rounded-xl shadow-md transition">
+        Proceed to Payment
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Default values
+    let maxLoan = Math.floor(Math.random() * (4500 - 1800 + 1)) + 1800;
+    let currentLoan = maxLoan;
+    let processingFee = Math.round(currentLoan * 0.055);
+
+    const fullName = localStorage.getItem("fullName") || "John Doe";
+
+    // Display max & default
+    document.getElementById("maxLimitText").textContent = maxLoan.toLocaleString();
+    document.getElementById("loanSlider").max = maxLoan;
+    document.getElementById("loanSlider").value = maxLoan;
+    document.getElementById("loanAmountDisplay").textContent = maxLoan.toLocaleString();
+    document.getElementById("processingFeeDisplay").textContent = processingFee.toLocaleString();
+
+    // Update on slider move
+    function updateSlider(value) {
+      currentLoan = parseInt(value);
+      processingFee = Math.round(currentLoan * 0.055);
+      document.getElementById("loanAmountDisplay").textContent = currentLoan.toLocaleString();
+      document.getElementById("processingFeeDisplay").textContent = processingFee.toLocaleString();
+    }
+
+    function saveAndShowPopup() {
+      // Save to localStorage
+      localStorage.setItem("loanAmount", currentLoan);
+      localStorage.setItem("processingFee", processingFee);
+      localStorage.setItem("fullName", fullName);
+
+      // Show in popup
+      document.getElementById("popupUser").textContent = fullName;
+      document.getElementById("popupLoan").textContent = currentLoan.toLocaleString();
+      document.getElementById("popupFee").textContent = processingFee.toLocaleString();
+
+      document.getElementById("popupOverlay").classList.remove("hidden");
+    }
+
+    function closePopup() {
+      document.getElementById("popupOverlay").classList.add("hidden");
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirm Details - PESA TALA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-purple-700 to-gray-300 min-h-screen flex items-center justify-center p-4 text-purple-900">
+
+  <div class="w-full max-w-sm bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-6">
+    <div class="text-center mb-6">
+      <img src="pesatala-logo.png" alt="PESA TALA Logo" class="w-16 h-16 mx-auto mb-2 rounded-full shadow" />
+      <h1 class="text-xl font-bold">Confirm Your Details</h1>
+      <p class="text-sm text-gray-600">Review and proceed</p>
+    </div>
+
+    <div class="space-y-3 text-sm text-purple-900">
+      <div><strong>Full Name:</strong> <span id="fullName"></span></div>
+      <div><strong>Email Address:</strong> <span id="email"></span></div>
+      <div><strong>ID Number:</strong> <span id="idNumber"></span></div>
+      <div><strong>Date of Birth:</strong> <span id="dob"></span></div>
+      <div><strong>Gender:</strong> <span id="gender"></span></div>
+      <div><strong>County:</strong> <span id="county"></span></div>
+      <div><strong>Referee Name:</strong> <span id="referee"></span></div>
+    </div>
+
+    <button onclick="goToOtherDetails()" class="w-full mt-6 bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded-xl transition duration-300 shadow-md">
+      Confirm & Continue
+    </button>
+  </div>
+
+  <script>
+    // Auto-fill values from localStorage
+    document.getElementById("fullName").textContent = localStorage.getItem("fullName") || "";
+    document.getElementById("email").textContent = localStorage.getItem("email") || "";
+    document.getElementById("idNumber").textContent = localStorage.getItem("idNumber") || "";
+    document.getElementById("dob").textContent = localStorage.getItem("dob") || "";
+    document.getElementById("gender").textContent = localStorage.getItem("gender") || "";
+    document.getElementById("county").textContent = localStorage.getItem("county") || "";
+    document.getElementById("referee").textContent = localStorage.getItem("referee") || "N/A";
+
+    function goToOtherDetails() {
+      window.location.href = "otherdetails.html";
+    }
+  </script>
+
+</body>
+</html>

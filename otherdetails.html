@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PESA TALA - Other Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-purple-700 to-gray-300 min-h-screen flex items-center justify-center px-4 py-8 text-white">
+
+  <!-- Form Section -->
+  <div id="formSection" class="bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-2xl w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center mb-6 text-white">Additional Information</h2>
+
+    <form id="detailsForm" class="space-y-4">
+
+      <!-- Education -->
+      <div>
+        <label for="education" class="block text-sm font-semibold mb-1">Education Level</label>
+        <select id="education" class="w-full p-2 rounded text-black" required>
+          <option value="" disabled selected>Select</option>
+          <option>Primary</option>
+          <option>Secondary</option>
+          <option>College</option>
+          <option>University</option>
+          <option>None</option>
+        </select>
+      </div>
+
+      <!-- Employment -->
+      <div>
+        <label for="employment" class="block text-sm font-semibold mb-1">Employment Status</label>
+        <select id="employment" class="w-full p-2 rounded text-black" required>
+          <option value="" disabled selected>Select</option>
+          <option>Employed</option>
+          <option>Self-Employed</option>
+          <option>Unemployed</option>
+          <option>Student</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <!-- Purpose -->
+      <div>
+        <label for="purpose" class="block text-sm font-semibold mb-1">Loan Purpose</label>
+        <select id="purpose" class="w-full p-2 rounded text-black" required>
+          <option value="" disabled selected>Select</option>
+          <option>Business</option>
+          <option>Education</option>
+          <option>Medical</option>
+          <option>Emergency</option>
+          <option>Personal Use</option>
+        </select>
+      </div>
+
+      <!-- Referee -->
+      <div>
+        <label class="block text-sm font-semibold mb-1">Referee Name</label>
+        <input type="text" id="refName" class="w-full p-2 rounded text-black" placeholder="e.g. Jane Doe" required>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Referee Phone</label>
+        <input type="tel" id="refPhone" class="w-full p-2 rounded text-black" placeholder="e.g. 0712345678" required>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Relationship</label>
+        <select id="refRelation" class="w-full p-2 rounded text-black" required>
+          <option value="" disabled selected>Select</option>
+          <option>Parent</option>
+          <option>Sibling</option>
+          <option>Friend</option>
+          <option>Spouse</option>
+          <option>Colleague</option>
+        </select>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="w-full mt-4 bg-yellow-400 text-purple-900 py-2 rounded-xl font-bold shadow-md hover:bg-yellow-300 transition">
+        Submit
+      </button>
+    </form>
+  </div>
+
+  <!-- Loading Section -->
+  <div id="loadingSection" class="hidden flex flex-col items-center justify-center text-center">
+    <svg class="animate-spin h-12 w-12 text-yellow-400 mb-4" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="white" stroke-width="4" fill="none"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <p class="text-white text-lg font-semibold">Processing your details...</p>
+  </div>
+
+  <!-- Script -->
+  <script>
+    const form = document.getElementById("detailsForm");
+    const formSection = document.getElementById("formSection");
+    const loadingSection = document.getElementById("loadingSection");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Save to localStorage
+      localStorage.setItem("education", document.getElementById("education").value);
+      localStorage.setItem("employment", document.getElementById("employment").value);
+      localStorage.setItem("purpose", document.getElementById("purpose").value);
+      localStorage.setItem("refName", document.getElementById("refName").value);
+      localStorage.setItem("refPhone", document.getElementById("refPhone").value);
+      localStorage.setItem("refRelation", document.getElementById("refRelation").value);
+
+      // Show loading
+      formSection.style.display = "none";
+      loadingSection.classList.remove("hidden");
+
+      // Redirect after 3 seconds
+      setTimeout(() => {
+        window.location.href = "checklimit.html";
+      }, 3000);
+    });
+  </script>
+</body>
+</html>
