@@ -36,139 +36,153 @@
       </p>
     </div>
 
-    <button onclick="showMpesaSetup()" 
-      class="w-full bg-blue-800 hover:bg-blue-900 text-white py-3 rounded-xl font-semibold transition">
-      Continue
+    <button onclick="showPaymentModal()" 
+      class="w-full bg-blue-800 hover:bg-blue-900 text-white py-3 rounded-xl font-semibold transition flex items-center justify-center">
+      <i class="fas fa-money-bill-wave mr-2"></i> Pay Processing Fee
     </button>
+    
+    <div class="mt-4 text-xs text-center text-gray-600">
+      <p><i class="fas fa-info-circle mr-1"></i> You'll receive an MPesa prompt on your phone</p>
+    </div>
   </div>
 
-  <!-- MPesa Setup Modal -->
-  <div id="mpesaOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white text-blue-900 rounded-2xl p-6 w-11/12 max-w-md text-center shadow-xl relative">
-      <button onclick="closeMpesaSetup()" class="absolute top-3 right-4 text-gray-500 text-xl">&times;</button>
+  <!-- Payment Modal -->
+  <div id="paymentOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white text-blue-900 rounded-2xl p-6 w-11/12 max-w-sm text-center shadow-xl relative">
+      <button onclick="closePaymentModal()" class="absolute top-3 right-4 text-gray-500 text-xl">&times;</button>
       
+      <!-- Header -->
       <div class="mb-4">
         <i class="fas fa-mobile-alt text-4xl text-green-600 mb-2"></i>
-        <h2 class="text-xl font-bold mb-2">MPesa Payment Setup</h2>
-        <p class="text-sm text-gray-600 mb-4">Enter your MPesa Till/PayBill details to proceed</p>
+        <h2 class="text-xl font-bold">MPesa Payment</h2>
+        <p class="text-sm text-gray-600">Processing fee payment</p>
       </div>
 
-      <div id="mpesaForm">
-        <div class="mb-4">
-          <label class="block text-left text-sm font-medium mb-1">Select Payment Type</label>
-          <div class="flex space-x-2 mb-4">
-            <button id="paybillBtn" onclick="selectType('paybill')" 
-              class="flex-1 py-2 rounded-lg border border-blue-300 hover:bg-blue-50 transition">
-              <i class="fas fa-building mr-2"></i>PayBill
-            </button>
-            <button id="tillBtn" onclick="selectType('till')" 
-              class="flex-1 py-2 rounded-lg border border-blue-300 hover:bg-blue-50 transition">
-              <i class="fas fa-store mr-2"></i>Till Number
-            </button>
-          </div>
+      <!-- Payment Details -->
+      <div class="bg-gray-50 p-4 rounded-lg mb-6">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-sm">Amount:</span>
+          <span class="text-xl font-bold text-green-600" id="paymentAmount">Ksh 0</span>
         </div>
-
-        <div id="paybillFields" class="hidden">
-          <div class="mb-3">
-            <label class="block text-left text-sm font-medium mb-1">Business Number</label>
-            <input type="text" id="businessNo" placeholder="e.g., 123456" 
-              class="w-full p-2 border border-gray-300 rounded-lg">
-          </div>
-          <div class="mb-3">
-            <label class="block text-left text-sm font-medium mb-1">Account Number</label>
-            <input type="text" id="accountNo" placeholder="Your account number" 
-              class="w-full p-2 border border-gray-300 rounded-lg">
-          </div>
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-sm">To:</span>
+          <span class="font-bold">MWANANCHI CREDIT</span>
         </div>
-
-        <div id="tillFields" class="hidden">
-          <div class="mb-3">
-            <label class="block text-left text-sm font-medium mb-1">Till Number</label>
-            <input type="text" id="tillNumber" placeholder="e.g., 123456" 
-              class="w-full p-2 border border-gray-300 rounded-lg">
-          </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm">Phone:</span>
+          <span class="font-bold" id="userPhone">07XX XXX XXX</span>
         </div>
-
-        <div class="mb-4">
-          <label class="block text-left text-sm font-medium mb-1">Consumer Key</label>
-          <input type="text" id="consumerKey" placeholder="Enter your consumer key" 
-            class="w-full p-2 border border-gray-300 rounded-lg">
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-left text-sm font-medium mb-1">Consumer Secret</label>
-          <input type="text" id="consumerSecret" placeholder="Enter your consumer secret" 
-            class="w-full p-2 border border-gray-300 rounded-lg">
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-left text-sm font-medium mb-1">Passkey</label>
-          <input type="text" id="passkey" placeholder="Enter your MPesa passkey" 
-            class="w-full p-2 border border-gray-300 rounded-lg">
-        </div>
-
-        <div class="mb-6 p-3 bg-blue-50 rounded-lg">
-          <p class="text-sm text-left">
-            <strong>Payment Summary:</strong><br>
-            Loan Amount: <span id="summaryLoan" class="font-bold">Ksh --</span><br>
-            Processing Fee: <span id="summaryFee" class="font-bold">Ksh --</span><br>
-            Total: <span id="summaryTotal" class="font-bold text-blue-700">Ksh --</span>
-          </p>
-        </div>
-
-        <button onclick="processPayment()" 
-          class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition flex items-center justify-center">
-          <i class="fas fa-lock mr-2"></i> Process Payment
-        </button>
-
-        <div id="testCredentials" class="mt-4 text-xs text-gray-500 hidden">
-          <p class="mb-1">For testing purposes, you can use:</p>
-          <p class="text-left">Consumer Key: <code class="bg-gray-100 p-1 rounded">your_consumer_key_here</code></p>
-          <p class="text-left">Consumer Secret: <code class="bg-gray-100 p-1 rounded">your_consumer_secret_here</code></p>
-          <p class="text-left">Passkey: <code class="bg-gray-100 p-1 rounded">your_passkey_here</code></p>
-        </div>
-
-        <button onclick="toggleTestCredentials()" class="mt-2 text-xs text-blue-600">
-          <i class="fas fa-code mr-1"></i> Show/Hide Test Credentials
-        </button>
       </div>
 
+      <!-- Phone Verification -->
+      <div class="mb-6">
+        <label class="block text-left text-sm font-medium mb-2">Confirm Phone Number:</label>
+        <div class="flex">
+          <span class="bg-gray-100 p-3 rounded-l-lg border border-r-0 border-gray-300">+254</span>
+          <input type="tel" id="phoneNumber" placeholder="7XX XXX XXX" 
+            class="flex-1 p-3 border border-gray-300 rounded-r-lg focus:border-blue-500 focus:outline-none"
+            maxlength="9">
+        </div>
+        <p class="text-xs text-gray-500 mt-2 text-left">
+          <i class="fas fa-info-circle mr-1"></i> We'll send MPesa prompt to this number
+        </p>
+      </div>
+
+      <!-- STK Push Button -->
+      <button onclick="initiateSTKPush()" id="stkPushBtn"
+        class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center mb-4">
+        <i class="fas fa-paper-plane mr-2"></i> Request MPesa Payment
+      </button>
+
+      <!-- Processing Status -->
       <div id="processingStatus" class="hidden">
-        <div class="mb-4">
-          <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-2"></i>
-          <h3 class="text-lg font-bold">Processing Payment</h3>
-          <p class="text-sm text-gray-600 mt-2">Initiating MPesa transaction...</p>
+        <div class="flex items-center justify-center space-x-3 mb-4">
+          <i class="fas fa-spinner fa-spin text-2xl text-green-600"></i>
+          <div>
+            <h4 class="font-bold">Sending MPesa Prompt</h4>
+            <p class="text-sm text-gray-600">Please wait...</p>
+          </div>
         </div>
-        <div class="text-left bg-gray-100 p-3 rounded-lg">
-          <p class="text-sm"><strong>Details:</strong></p>
-          <p class="text-xs mt-1">Type: <span id="statusType">--</span></p>
-          <p class="text-xs">Amount: <span id="statusAmount">--</span></p>
-          <p class="text-xs">Reference: <span id="statusRef">--</span></p>
+        
+        <!-- Countdown Timer -->
+        <div class="mb-4">
+          <div class="flex justify-between text-sm mb-1">
+            <span>Prompt will expire in:</span>
+            <span id="countdownTimer" class="font-bold">60s</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div id="progressBar" class="bg-green-600 h-2 rounded-full" style="width: 100%"></div>
+          </div>
+        </div>
+        
+        <p class="text-xs text-gray-600">
+          <i class="fas fa-mobile-alt mr-1"></i> Check your phone for MPesa prompt
+        </p>
+      </div>
+
+      <!-- Waiting for Payment Status -->
+      <div id="waitingStatus" class="hidden">
+        <div class="text-center">
+          <i class="fas fa-clock text-4xl text-yellow-500 mb-3"></i>
+          <h4 class="font-bold text-lg">Waiting for Payment</h4>
+          <p class="text-sm text-gray-600 mb-4">Please enter your PIN on your phone</p>
+          <div class="animate-pulse">
+            <i class="fas fa-mobile-alt text-2xl text-gray-400"></i>
+            <p class="text-xs text-gray-500 mt-2">MPesa prompt sent to your phone</p>
+          </div>
         </div>
       </div>
 
+      <!-- Success Status -->
       <div id="successStatus" class="hidden">
-        <div class="mb-4">
-          <i class="fas fa-check-circle text-4xl text-green-600 mb-2"></i>
-          <h3 class="text-lg font-bold">Payment Initiated!</h3>
-          <p class="text-sm text-gray-600 mt-2">Check your phone for MPesa prompt</p>
+        <div class="text-center">
+          <i class="fas fa-check-circle text-4xl text-green-600 mb-3"></i>
+          <h4 class="font-bold text-lg">Payment Successful!</h4>
+          <p class="text-sm text-gray-600 mb-4">Your payment has been received</p>
+          <div class="bg-green-50 p-3 rounded-lg text-left mb-4">
+            <p class="text-sm font-bold mb-2">Transaction Details:</p>
+            <p class="text-xs mb-1">Reference: <span id="transactionRef">MC-</span></p>
+            <p class="text-xs mb-1">Amount: <span id="successAmount">Ksh 0</span></p>
+            <p class="text-xs">Time: <span id="transactionTime">--:--</span></p>
+          </div>
+          <button onclick="completePayment()" 
+            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+            Continue to Loan
+          </button>
         </div>
-        <button onclick="closeMpesaSetup()" 
-          class="w-full bg-blue-700 hover:bg-blue-800 text-white py-2 rounded-lg font-semibold transition">
-          Continue
-        </button>
       </div>
 
+      <!-- Error Status -->
       <div id="errorStatus" class="hidden">
-        <div class="mb-4">
-          <i class="fas fa-exclamation-circle text-4xl text-red-600 mb-2"></i>
-          <h3 class="text-lg font-bold">Setup Error</h3>
-          <p class="text-sm text-gray-600 mt-2" id="errorMessage">Please check your details</p>
+        <div class="text-center">
+          <i class="fas fa-times-circle text-4xl text-red-600 mb-3"></i>
+          <h4 class="font-bold text-lg" id="errorTitle">Payment Failed</h4>
+          <p class="text-sm text-gray-600 mb-4" id="errorMessage">Please try again</p>
+          <div class="flex space-x-3">
+            <button onclick="retryPayment()" 
+              class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition">
+              Try Again
+            </button>
+            <button onclick="closePaymentModal()" 
+              class="flex-1 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition">
+              Cancel
+            </button>
+          </div>
         </div>
-        <button onclick="showMpesaForm()" 
-          class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition">
-          Try Again
-        </button>
+      </div>
+
+      <!-- Instructions -->
+      <div id="instructions" class="mt-6 pt-4 border-t border-gray-200">
+        <p class="text-xs text-gray-600">
+          <i class="fas fa-lightbulb mr-1"></i> 
+          <strong>How it works:</strong>
+        </p>
+        <ol class="text-xs text-gray-600 text-left mt-2 space-y-1">
+          <li>1. Click "Request MPesa Payment"</li>
+          <li>2. Check your phone for MPesa prompt</li>
+          <li>3. Enter your PIN on your phone</li>
+          <li>4. Wait for confirmation</li>
+        </ol>
       </div>
     </div>
   </div>
@@ -176,7 +190,10 @@
   <script>
     // Initialize user data
     const fullName = localStorage.getItem("fullName") || "User";
+    const savedPhone = localStorage.getItem("phone") || "712345678";
     document.getElementById("userName").textContent = fullName;
+    document.getElementById("userPhone").textContent = formatPhone(savedPhone);
+    document.getElementById("phoneNumber").value = savedPhone.replace(/^0/, '');
 
     // Random loan limit between 3000 and 8500
     const maxLoan = Math.floor(Math.random() * (8500 - 3000 + 1)) + 3000;
@@ -192,154 +209,251 @@
     function updateDisplay() {
       const selectedLoan = parseInt(loanSlider.value);
       const fee = Math.round(selectedLoan * 0.03);
-      const total = selectedLoan + fee;
 
       selectedLoanText.textContent = "Ksh " + selectedLoan.toLocaleString();
       processingFeeText.textContent = "Ksh " + fee.toLocaleString();
 
-      // Save to localStorage
       localStorage.setItem("selectedLoan", selectedLoan);
       localStorage.setItem("processingFee", fee);
-      localStorage.setItem("totalAmount", total);
     }
 
     loanSlider.addEventListener("input", updateDisplay);
     document.getElementById("maxLoanDisplay").textContent = "Ksh " + maxLoan.toLocaleString();
     updateDisplay();
 
-    // MPesa functions
-    let paymentType = 'paybill';
+    // Utility functions
+    function formatPhone(phone) {
+      const cleaned = phone.replace(/\D/g, '');
+      if (cleaned.length === 9) {
+        return `0${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`;
+      }
+      return phone;
+    }
 
-    function showMpesaSetup() {
-      const loan = localStorage.getItem("selectedLoan");
+    function showPaymentModal() {
       const fee = localStorage.getItem("processingFee");
-      const total = parseInt(loan) + parseInt(fee);
+      if (!fee || fee === "0") {
+        alert("Please select a valid loan amount first");
+        return;
+      }
 
-      // Update summary
-      document.getElementById("summaryLoan").textContent = "Ksh " + parseInt(loan).toLocaleString();
-      document.getElementById("summaryFee").textContent = "Ksh " + parseInt(fee).toLocaleString();
-      document.getElementById("summaryTotal").textContent = "Ksh " + total.toLocaleString();
+      document.getElementById("paymentAmount").textContent = "Ksh " + parseInt(fee).toLocaleString();
+      resetModal();
+      document.getElementById("paymentOverlay").classList.remove("hidden");
+    }
 
-      // Reset form
-      selectType('paybill');
-      document.getElementById("mpesaForm").classList.remove("hidden");
+    function closePaymentModal() {
+      document.getElementById("paymentOverlay").classList.add("hidden");
+    }
+
+    function resetModal() {
+      document.getElementById("stkPushBtn").classList.remove("hidden");
       document.getElementById("processingStatus").classList.add("hidden");
+      document.getElementById("waitingStatus").classList.add("hidden");
       document.getElementById("successStatus").classList.add("hidden");
       document.getElementById("errorStatus").classList.add("hidden");
-
-      document.getElementById("mpesaOverlay").classList.remove("hidden");
+      document.getElementById("instructions").classList.remove("hidden");
     }
 
-    function closeMpesaSetup() {
-      document.getElementById("mpesaOverlay").classList.add("hidden");
-    }
-
-    function selectType(type) {
-      paymentType = type;
+    // STK Push Implementation
+    async function initiateSTKPush() {
+      const phone = document.getElementById("phoneNumber").value.trim();
+      const fee = localStorage.getItem("processingFee");
       
-      // Update button styles
-      document.getElementById("paybillBtn").classList.remove("bg-blue-100", "border-blue-500");
-      document.getElementById("tillBtn").classList.remove("bg-blue-100", "border-blue-500");
-      
-      if (type === 'paybill') {
-        document.getElementById("paybillBtn").classList.add("bg-blue-100", "border-blue-500");
-        document.getElementById("paybillFields").classList.remove("hidden");
-        document.getElementById("tillFields").classList.add("hidden");
-      } else {
-        document.getElementById("tillBtn").classList.add("bg-blue-100", "border-blue-500");
-        document.getElementById("tillFields").classList.remove("hidden");
-        document.getElementById("paybillFields").classList.add("hidden");
+      if (!phone || phone.length !== 9 || !/^[0-9]{9}$/.test(phone)) {
+        alert("Please enter a valid 9-digit phone number (without 0)");
+        return;
       }
-    }
 
-    function toggleTestCredentials() {
-      const testDiv = document.getElementById("testCredentials");
-      testDiv.classList.toggle("hidden");
-    }
-
-    function showMpesaForm() {
-      document.getElementById("mpesaForm").classList.remove("hidden");
-      document.getElementById("processingStatus").classList.add("hidden");
-      document.getElementById("errorStatus").classList.add("hidden");
-    }
-
-    function processPayment() {
-      // Get form values
-      const consumerKey = document.getElementById("consumerKey").value.trim();
-      const consumerSecret = document.getElementById("consumerSecret").value.trim();
-      const passkey = document.getElementById("passkey").value.trim();
-      
-      let businessNo = "", accountNo = "", tillNo = "";
-      
-      if (paymentType === 'paybill') {
-        businessNo = document.getElementById("businessNo").value.trim();
-        accountNo = document.getElementById("accountNo").value.trim();
-        
-        if (!businessNo || !accountNo || !consumerKey || !consumerSecret || !passkey) {
-          showError("Please fill all PayBill fields");
-          return;
-        }
-      } else {
-        tillNo = document.getElementById("tillNumber").value.trim();
-        
-        if (!tillNo || !consumerKey || !consumerSecret || !passkey) {
-          showError("Please fill all Till Number fields");
-          return;
-        }
+      if (!fee || parseInt(fee) < 10) {
+        alert("Invalid payment amount");
+        return;
       }
 
       // Show processing status
-      document.getElementById("mpesaForm").classList.add("hidden");
+      document.getElementById("stkPushBtn").classList.add("hidden");
+      document.getElementById("instructions").classList.add("hidden");
       document.getElementById("processingStatus").classList.remove("hidden");
+
+      // Start countdown
+      startCountdown();
+
+      // In a real implementation, you would:
+      // 1. Send request to your backend API
+      // 2. Backend generates token and initiates STK Push
+      // 3. Backend waits for MPesa callback
+      // 4. Update frontend via WebSocket or polling
+
+      // Simulate API request to backend
+      simulateSTKPushRequest(phone, fee);
+    }
+
+    function startCountdown() {
+      let timeLeft = 60;
+      const timerElement = document.getElementById("countdownTimer");
+      const progressBar = document.getElementById("progressBar");
       
-      const loan = localStorage.getItem("selectedLoan");
-      const fee = localStorage.getItem("processingFee");
-      const total = parseInt(loan) + parseInt(fee);
+      const countdown = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = `${timeLeft}s`;
+        progressBar.style.width = `${(timeLeft / 60) * 100}%`;
+        
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          showError("STK Push expired", "The payment request has expired. Please try again.");
+        }
+      }, 1000);
       
-      // Update status display
-      document.getElementById("statusType").textContent = paymentType.toUpperCase();
-      document.getElementById("statusAmount").textContent = "Ksh " + total.toLocaleString();
-      document.getElementById("statusRef").textContent = "MC-" + Date.now();
+      // Store interval ID to clear later
+      window.countdownInterval = countdown;
+    }
+
+    async function simulateSTKPushRequest(phone, amount) {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
       
-      // Save credentials to localStorage (in a real app, this would be sent to your backend)
-      const mpesaConfig = {
-        type: paymentType,
-        consumerKey: consumerKey,
-        consumerSecret: consumerSecret,
-        passkey: passkey,
-        businessNo: businessNo,
-        accountNo: accountNo,
-        tillNo: tillNo,
-        amount: total,
-        timestamp: new Date().toISOString()
-      };
+      // Simulate network conditions
+      const isNetworkAvailable = Math.random() > 0.1;
+      if (!isNetworkAvailable) {
+        clearInterval(window.countdownInterval);
+        showError("Network Error", "Unable to connect to MPesa. Check your connection and try again.");
+        return;
+      }
+
+      // Simulate STK Push sent (90% success rate)
+      const isPushSent = Math.random() > 0.1;
+      if (!isPushSent) {
+        clearInterval(window.countdownInterval);
+        showError("Request Failed", "Unable to send MPesa prompt. Please try again.");
+        return;
+      }
+
+      // STK Push sent successfully
+      document.getElementById("processingStatus").classList.add("hidden");
+      document.getElementById("waitingStatus").classList.remove("hidden");
       
-      localStorage.setItem("mpesaConfig", JSON.stringify(mpesaConfig));
+      // Simulate user entering PIN on phone
+      simulateUserPaymentResponse(phone, amount);
+    }
+
+    function simulateUserPaymentResponse(phone, amount) {
+      // Random delay for user to respond (10-30 seconds)
+      const responseTime = 10000 + Math.random() * 20000;
       
-      // Simulate API call delay
       setTimeout(() => {
-        document.getElementById("processingStatus").classList.add("hidden");
-        document.getElementById("successStatus").classList.remove("hidden");
+        // 85% chance user completes payment
+        const isPaymentCompleted = Math.random() > 0.15;
         
-        // In a real implementation, you would:
-        // 1. Send these credentials to your backend
-        // 2. Your backend would use them to generate an MPesa token
-        // 3. Initiate the STK Push with the provided details
-        // 4. Handle the callback
+        if (isPaymentCompleted) {
+          // 95% chance payment is successful
+          const isSuccessful = Math.random() > 0.05;
+          
+          if (isSuccessful) {
+            showPaymentSuccess(phone, amount);
+          } else {
+            showPaymentFailure();
+          }
+        } else {
+          // User didn't complete payment
+          showError("Payment Timeout", "You didn't complete the payment on your phone.");
+        }
         
-        console.log("MPesa Credentials captured:", mpesaConfig);
-        console.log("Send these to your backend to initiate payment of Ksh", total);
-      }, 3000);
+        clearInterval(window.countdownInterval);
+      }, responseTime);
     }
 
-    function showError(message) {
-      document.getElementById("errorMessage").textContent = message;
-      document.getElementById("mpesaForm").classList.add("hidden");
+    function showPaymentSuccess(phone, amount) {
+      const timestamp = new Date();
+      const transRef = "MC" + Date.now().toString().slice(-8);
+      const transTime = timestamp.toLocaleTimeString('en-KE', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      });
+      
+      document.getElementById("waitingStatus").classList.add("hidden");
+      document.getElementById("successStatus").classList.remove("hidden");
+      
+      document.getElementById("transactionRef").textContent = transRef;
+      document.getElementById("successAmount").textContent = "Ksh " + parseInt(amount).toLocaleString();
+      document.getElementById("transactionTime").textContent = transTime;
+      
+      // Save transaction
+      const transaction = {
+        id: transRef,
+        amount: parseInt(amount),
+        phone: phone,
+        status: "completed",
+        timestamp: timestamp.toISOString(),
+        type: "processing_fee"
+      };
+      localStorage.setItem("lastTransaction", JSON.stringify(transaction));
+      localStorage.setItem("paymentCompleted", "true");
+    }
+
+    function showPaymentFailure() {
+      const failures = [
+        { title: "Insufficient Funds", message: "You don't have enough money in your MPesa account." },
+        { title: "Wrong PIN", message: "You entered wrong MPesa PIN too many times." },
+        { title: "Transaction Cancelled", message: "You cancelled the payment on your phone." },
+        { title: "Daily Limit Exceeded", message: "You have reached your daily transaction limit." }
+      ];
+      
+      const failure = failures[Math.floor(Math.random() * failures.length)];
+      showError(failure.title, failure.message);
+    }
+
+    function showError(title, message) {
+      document.getElementById("processingStatus").classList.add("hidden");
+      document.getElementById("waitingStatus").classList.add("hidden");
       document.getElementById("errorStatus").classList.remove("hidden");
+      
+      document.getElementById("errorTitle").textContent = title;
+      document.getElementById("errorMessage").textContent = message;
     }
 
-    // Initialize with PayBill selected
-    selectType('paybill');
+    function retryPayment() {
+      resetModal();
+      document.getElementById("phoneNumber").focus();
+    }
+
+    function completePayment() {
+      closePaymentModal();
+      
+      // Show success message
+      const fee = localStorage.getItem("processingFee");
+      const loan = localStorage.getItem("selectedLoan");
+      
+      const successHTML = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-2xl p-6 max-w-sm w-11/12 text-center">
+            <i class="fas fa-check-circle text-5xl text-green-600 mb-4"></i>
+            <h2 class="text-xl font-bold mb-2">Payment Confirmed!</h2>
+            <p class="text-gray-600 mb-4">
+              Your processing fee of <strong>Ksh ${parseInt(fee).toLocaleString()}</strong> has been received.
+            </p>
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+              <p class="font-bold text-blue-800">Your Loan Details:</p>
+              <p class="text-lg font-bold mt-1">Ksh ${parseInt(loan).toLocaleString()}</p>
+              <p class="text-sm text-gray-600 mt-1">Will be disbursed within 24 hours</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" 
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">
+              Continue
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', successHTML);
+    }
+
+    // Close modal on overlay click
+    document.getElementById("paymentOverlay").addEventListener('click', function(e) {
+      if (e.target === this) {
+        closePaymentModal();
+      }
+    });
   </script>
 </body>
 </html>
