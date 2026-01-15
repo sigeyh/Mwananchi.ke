@@ -454,6 +454,130 @@
         closePaymentModal();
       }
     });
+// Base URL for Vercel functions
+const API_BASE_URL = window.location.origin + '/api/mpesa';
+
+async function initiateSTKPush() {
+  const phone = document.getElementById("phoneNumber").value.trim();
+  const fee = localStorage.getItem("processingFee");
+  
+  if (!phone || phone.length !== 9 || !/^[0-9]{9}$/.test(phone)) {
+    alert("Please enter a valid 9-digit phone number (without 0)");
+    return;
+  }
+  
+  // Show processing
+  document.getElementById("stkPushBtn").classList.add("hidden");
+  document.getElementById("processingStatus").classList.remove("hidden");
+  startCountdown();
+  
+  try {
+    // Call Vercel function
+    const response = await fetch(`${API_BASE_URL}/stkpush`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone: phone,
+        amount: fee,
+        loanId: 'MC' + Date.now()
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      document.getElementById("processingStatus").classList.add("hidden");
+      document.getElementById("waitingStatus").classList.remove("hidden");
+      
+      // Start polling for status
+      pollPaymentStatus(data.data.checkoutRequestId);
+    } else {
+      throw new Error(data.error || 'Failed to initiate payment');
+    }
+    
+  } catch (error) {
+    clearInterval(window.countdownInterval);
+    showError("Request Failed", error.details || error.message);
+  }
+}
+
+// Poll payment status
+async function pollPaymentStatus(checkoutRequestId) {
+  const maxAttempts = 30; // 2.5 minutes
+  let attempts = 0;
+  
+  const poll = setInterval(async () => {
+    attempts++;
+    
+    if (attempts > maxAttempts) {
+      clearInterval(poll);
+      showError("Payment Timeout", "Payment confirmation is taking too long");
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/check-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ checkoutRequestId })
+      });
+      
+      const data = await response.json();
+      
+      if (data.ResultCode === "0") {
+        // Payment successful
+        clearInterval(poll);
+        clearInterval(window.countdownInterval);
+        
+        const phone = document.getElementById("phoneNumber").value.trim();
+        const fee = localStorage.getItem("processingFee");
+        showPaymentSuccess(phone, fee, data);
+      } else if (data.ResultCode !== "1037") {
+        // Not pending anymore
+        clearInterval(poll);
+        clearInterval(window.countdownInterval);
+        checkFinalStatus(data.ResultCode);
+      }
+      
+    } catch (error) {
+      console.error('Polling error:', error);
+    }
+  }, 5000);
+}
+
+function showPaymentSuccess(phone, amount, mpesaData) {
+  const timestamp = new Date();
+  const transRef = mpesaData.MpesaReceiptNumber || "MC" + Date.now().toString().slice(-8);
+  const transTime = timestamp.toLocaleTimeString('en-KE', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  
+  document.getElementById("waitingStatus").classList.add("hidden");
+  document.getElementById("successStatus").classList.remove("hidden");
+  
+  document.getElementById("transactionRef").textContent = transRef;
+  document.getElementById("successAmount").textContent = "Ksh " + parseInt(amount).toLocaleString();
+  document.getElementById("transactionTime").textContent = transTime;
+  
+  // Save transaction
+  const transaction = {
+    id: transRef,
+    amount: parseInt(amount),
+    phone: phone,
+    mpesaData: mpesaData,
+    status: "completed",
+    timestamp: timestamp.toISOString(),
+    type: "processing_fee"
+  };
+  
+  localStorage.setItem("lastTransaction", JSON.stringify(transaction));
+  localStorage.setItem("paymentCompleted", "true");
+}
+    
   </script>
 </body>
 </html>
