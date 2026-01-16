@@ -106,7 +106,7 @@
       </div>
 
       <!-- STK Push Button -->
-      <button onclick="initiateSTKPush()" id="stkPushBtn"
+      <button onclick="initiateRealSTKPush()" id="stkPushBtn"
         class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center mb-4">
         <i class="fas fa-paper-plane mr-2"></i> Request MPesa Payment
       </button>
@@ -326,8 +326,8 @@
       }
     }
 
-    // STK Push Implementation
-    async function initiateSTKPush() {
+    // REAL MPESA STK PUSH INTEGRATION
+    async function initiateRealSTKPush() {
       const phone = getPaymentPhone();
       const fee = localStorage.getItem("processingFee");
       
@@ -357,124 +357,178 @@
       // Start countdown
       startCountdown();
 
-      // Simulate API request to backend
-      simulateSTKPushRequest(phone, fee);
+      // Call your backend API to initiate real STK Push
+      try {
+        // Replace with your actual backend endpoint
+        const response = await fetch('https://your-backend-api.com/mpesa/stkpush', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phoneNumber: `254${phone}`, // MPesa expects 254 format
+            amount: parseInt(fee),
+            accountReference: `MC${Date.now().toString().slice(-6)}`,
+            transactionDesc: 'Loan Processing Fee',
+            businessShortCode: '174379', // Your MPesa shortcode
+            passKey: 'YOUR_MPESA_PASS_KEY', // Your passkey
+            callbackUrl: 'https://your-backend-api.com/mpesa/callback'
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.ResponseCode === "0") {
+          // STK Push initiated successfully
+          document.getElementById("processingStatus").classList.add("hidden");
+          document.getElementById("waitingStatus").classList.remove("hidden");
+          
+          // Start polling for payment status
+          const checkoutRequestId = data.CheckoutRequestID;
+          pollPaymentStatus(checkoutRequestId);
+        } else {
+          clearInterval(window.countdownInterval);
+          showError("STK Push Failed", data.errorMessage || "Failed to initiate payment");
+        }
+      } catch (error) {
+        clearInterval(window.countdownInterval);
+        showError("Network Error", "Failed to connect to payment service");
+        console.error('STK Push error:', error);
+      }
     }
 
     function startCountdown() {
-      let timeLeft = 60;
+      let timeLeft = 120; // 2 minutes for real MPesa
       const timerElement = document.getElementById("countdownTimer");
       const progressBar = document.getElementById("progressBar");
       
-      const countdown = setInterval(() => {
+      if (window.countdownInterval) {
+        clearInterval(window.countdownInterval);
+      }
+      
+      window.countdownInterval = setInterval(() => {
         timeLeft--;
         timerElement.textContent = `${timeLeft}s`;
-        progressBar.style.width = `${(timeLeft / 60) * 100}%`;
+        progressBar.style.width = `${(timeLeft / 120) * 100}%`;
         
         if (timeLeft <= 0) {
-          clearInterval(countdown);
+          clearInterval(window.countdownInterval);
           showError("STK Push expired", "The payment request has expired. Please try again.");
         }
       }, 1000);
-      
-      // Store interval ID to clear later
-      window.countdownInterval = countdown;
     }
 
-    async function simulateSTKPushRequest(phone, amount) {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+    // Poll for payment status
+    async function pollPaymentStatus(checkoutRequestId) {
+      let attempts = 0;
+      const maxAttempts = 60; // Poll for 2 minutes (60 * 2 seconds)
       
-      // Simulate network conditions
-      const isNetworkAvailable = Math.random() > 0.1;
-      if (!isNetworkAvailable) {
-        clearInterval(window.countdownInterval);
-        showError("Network Error", "Unable to connect to MPesa. Check your connection and try again.");
-        return;
-      }
-
-      // Simulate STK Push sent (90% success rate)
-      const isPushSent = Math.random() > 0.1;
-      if (!isPushSent) {
-        clearInterval(window.countdownInterval);
-        showError("Request Failed", "Unable to send MPesa prompt. Please try again.");
-        return;
-      }
-
-      // STK Push sent successfully
-      document.getElementById("processingStatus").classList.add("hidden");
-      document.getElementById("waitingStatus").classList.remove("hidden");
-      
-      // Simulate user entering PIN on phone
-      simulateUserPaymentResponse(phone, amount);
-    }
-
-    function simulateUserPaymentResponse(phone, amount) {
-      // Random delay for user to respond (10-30 seconds)
-      const responseTime = 10000 + Math.random() * 20000;
-      
-      setTimeout(() => {
-        // 85% chance user completes payment
-        const isPaymentCompleted = Math.random() > 0.15;
+      const pollInterval = setInterval(async () => {
+        attempts++;
         
-        if (isPaymentCompleted) {
-          // 95% chance payment is successful
-          const isSuccessful = Math.random() > 0.05;
-          
-          if (isSuccessful) {
-            showPaymentSuccess(phone, amount);
-          } else {
-            showPaymentFailure();
-          }
-        } else {
-          // User didn't complete payment
-          showError("Payment Timeout", "You didn't complete the payment on your phone.");
+        if (attempts > maxAttempts) {
+          clearInterval(pollInterval);
+          showError("Payment Timeout", "Payment confirmation is taking too long");
+          return;
         }
         
-        clearInterval(window.countdownInterval);
-      }, responseTime);
+        try {
+          const response = await fetch('https://your-backend-api.com/mpesa/query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ checkoutRequestId })
+          });
+          
+          const data = await response.json();
+          
+          if (data.ResultCode === "0") {
+            // Payment successful
+            clearInterval(pollInterval);
+            clearInterval(window.countdownInterval);
+            showRealPaymentSuccess(data);
+          } else if (data.ResultCode !== "1037") {
+            // Not pending (1037 is "Request processing in progress")
+            clearInterval(pollInterval);
+            clearInterval(window.countdownInterval);
+            handlePaymentResult(data.ResultCode);
+          }
+          // If ResultCode is 1037, continue polling
+          
+        } catch (error) {
+          console.error('Polling error:', error);
+        }
+      }, 2000); // Poll every 2 seconds
     }
 
-    function showPaymentSuccess(phone, amount) {
+    function handlePaymentResult(resultCode) {
+      const messages = {
+        "0": { title: "Payment Successful", message: "Payment completed successfully" },
+        "1": { title: "Insufficient Funds", message: "You don't have enough funds in your MPesa account" },
+        "1032": { title: "Request Cancelled", message: "You cancelled the payment request" },
+        "1037": { title: "Timeout", message: "MPesa request timed out" },
+        "2001": { title: "Wrong PIN", message: "You entered wrong PIN too many times" },
+        "2006": { title: "Wrong PIN", message: "Incorrect MPesa PIN entered" }
+      };
+      
+      const result = messages[resultCode] || { 
+        title: "Payment Failed", 
+        message: "Transaction could not be completed" 
+      };
+      
+      if (resultCode === "0") {
+        showRealPaymentSuccess({ ResultCode: resultCode });
+      } else {
+        showError(result.title, result.message);
+      }
+    }
+
+    function showRealPaymentSuccess(mpesaData) {
       const timestamp = new Date();
-      const transRef = "MC" + Date.now().toString().slice(-8);
-      const transTime = timestamp.toLocaleTimeString('en-KE', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: true 
-      });
+      const transRef = mpesaData.MpesaReceiptNumber || `MC${Date.now().toString().slice(-8)}`;
+      const phone = getPaymentPhone();
       
       document.getElementById("waitingStatus").classList.add("hidden");
       document.getElementById("successStatus").classList.remove("hidden");
       
       document.getElementById("transactionRef").textContent = transRef;
-      document.getElementById("successAmount").textContent = "Ksh " + parseInt(amount).toLocaleString();
+      document.getElementById("successAmount").textContent = "Ksh " + 
+        localStorage.getItem("processingFee");
       document.getElementById("successPhone").textContent = formatPhone(phone);
-      document.getElementById("transactionTime").textContent = transTime;
+      document.getElementById("transactionTime").textContent = 
+        timestamp.toLocaleTimeString('en-KE', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        });
       
-      // Save transaction
+      // Save transaction to localStorage
       const transaction = {
         id: transRef,
-        amount: parseInt(amount),
+        amount: parseInt(localStorage.getItem("processingFee")),
         phone: phone,
+        mpesaData: mpesaData,
         status: "completed",
         timestamp: timestamp.toISOString(),
         type: "processing_fee"
       };
+      
       localStorage.setItem("lastTransaction", JSON.stringify(transaction));
       localStorage.setItem("paymentCompleted", "true");
+      
+      // Send to your backend for permanent storage
+      saveTransactionToBackend(transaction);
     }
 
-    function showPaymentFailure() {
-      const failures = [
-        { title: "Insufficient Funds", message: "You don't have enough money in your MPesa account." },
-        { title: "Wrong PIN", message: "You entered wrong MPesa PIN too many times." },
-        { title: "Transaction Cancelled", message: "You cancelled the payment on your phone." },
-        { title: "Daily Limit Exceeded", message: "You have reached your daily transaction limit." }
-      ];
-      
-      const failure = failures[Math.floor(Math.random() * failures.length)];
-      showError(failure.title, failure.message);
+    async function saveTransactionToBackend(transaction) {
+      try {
+        await fetch('https://your-backend-api.com/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(transaction)
+        });
+      } catch (error) {
+        console.error('Failed to save transaction:', error);
+      }
     }
 
     function showError(title, message) {
@@ -530,53 +584,24 @@
         closePaymentModal();
       }
     });
-    
-    // Real MPesa Integration (uncomment when you have backend API)
+
+    // You'll need to set up a backend with these endpoints:
+    // 1. /mpesa/stkpush - Initiates STK Push
+    // 2. /mpesa/query - Queries payment status
+    // 3. /mpesa/callback - Receives MPesa callbacks
+    // 4. /transactions - Saves transactions
+
+    // For testing, you can use Daraja API Sandbox credentials temporarily:
     /*
-    const API_BASE_URL = 'https://your-api.vercel.app/api/mpesa';
-    
-    async function initiateSTKPush() {
-      const phone = getPaymentPhone();
-      const fee = localStorage.getItem("processingFee");
-      
-      if (!phone || phone.length !== 9 || !/^[0-9]{9}$/.test(phone)) {
-        alert("Please enter a valid 9-digit phone number (without 0)");
-        return;
-      }
-      
-      // Show processing
-      document.getElementById("stkPushBtn").classList.add("hidden");
-      document.getElementById("processingStatus").classList.remove("hidden");
-      startCountdown();
-      
-      try {
-        const response = await fetch(`${API_BASE_URL}/stkpush`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone: phone,
-            amount: fee,
-            loanId: 'MC' + Date.now()
-          })
-          
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          document.getElementById("processingStatus").classList.add("hidden");
-          document.getElementById("waitingStatus").classList.remove("hidden");
-          pollPaymentStatus(data.data.checkoutRequestId);
-        } else {
-          throw new Error(data.error || 'Failed to initiate payment');
-        }
-        
-      } catch (error) {
-        clearInterval(window.countdownInterval);
-        showError("Request Failed", error.message);
-      }
-    }
+    const MPESA_CONFIG = {
+      businessShortCode: "174379",
+      passKey: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+      consumerKey: "YOUR_CONSUMER_KEY",
+      consumerSecret: "YOUR_CONSUMER_SECRET",
+      callbackUrl: "https://your-domain.com/mpesa/callback"
+    };
     */
+
   </script>
 </body>
 </html>
