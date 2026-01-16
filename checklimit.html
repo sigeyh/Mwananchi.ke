@@ -69,23 +69,40 @@
           <span class="font-bold">MWANANCHI CREDIT</span>
         </div>
         <div class="flex justify-between items-center">
-          <span class="text-sm">Phone:</span>
-          <span class="font-bold" id="userPhone">07XX XXX XXX</span>
+          <span class="text-sm">Registered Phone:</span>
+          <span class="font-bold" id="registeredPhone">07XX XXX XXX</span>
         </div>
       </div>
 
       <!-- Phone Verification -->
       <div class="mb-6">
-        <label class="block text-left text-sm font-medium mb-2">Confirm Phone Number:</label>
-        <div class="flex">
-          <span class="bg-gray-100 p-3 rounded-l-lg border border-r-0 border-gray-300">+254</span>
-          <input type="tel" id="phoneNumber" placeholder="7XX XXX XXX" 
-            class="flex-1 p-3 border border-gray-300 rounded-r-lg focus:border-blue-500 focus:outline-none"
-            maxlength="9">
+        <label class="block text-left text-sm font-medium mb-2">Confirm Phone Number for MPesa:</label>
+        <div class="flex items-center mb-3">
+          <input type="checkbox" id="useRegisteredPhone" class="mr-2 h-4 w-4 text-blue-600" checked>
+          <label for="useRegisteredPhone" class="text-sm">Use my registered phone number</label>
         </div>
-        <p class="text-xs text-gray-500 mt-2 text-left">
-          <i class="fas fa-info-circle mr-1"></i> We'll send MPesa prompt to this number
-        </p>
+        
+        <div id="phoneInputContainer" class="hidden">
+          <div class="flex">
+            <span class="bg-gray-100 p-3 rounded-l-lg border border-r-0 border-gray-300">+254</span>
+            <input type="tel" id="phoneNumber" placeholder="7XX XXX XXX" 
+              class="flex-1 p-3 border border-gray-300 rounded-r-lg focus:border-blue-500 focus:outline-none"
+              maxlength="9">
+          </div>
+          <p class="text-xs text-gray-500 mt-2 text-left">
+            <i class="fas fa-info-circle mr-1"></i> We'll send MPesa prompt to this number
+          </p>
+        </div>
+        
+        <div id="phoneConfirmContainer">
+          <div class="bg-blue-50 p-3 rounded-lg text-left">
+            <p class="text-sm font-medium mb-1">MPesa will be sent to:</p>
+            <p class="text-lg font-bold text-blue-700" id="selectedPhoneDisplay">07XX XXX XXX</p>
+            <button onclick="editPhoneNumber()" class="mt-2 text-sm text-blue-600 hover:text-blue-800">
+              <i class="fas fa-edit mr-1"></i> Use a different number
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- STK Push Button -->
@@ -128,7 +145,7 @@
           <p class="text-sm text-gray-600 mb-4">Please enter your PIN on your phone</p>
           <div class="animate-pulse">
             <i class="fas fa-mobile-alt text-2xl text-gray-400"></i>
-            <p class="text-xs text-gray-500 mt-2">MPesa prompt sent to your phone</p>
+            <p class="text-xs text-gray-500 mt-2">MPesa prompt sent to <span id="sentToPhone">your phone</span></p>
           </div>
         </div>
       </div>
@@ -143,6 +160,7 @@
             <p class="text-sm font-bold mb-2">Transaction Details:</p>
             <p class="text-xs mb-1">Reference: <span id="transactionRef">MC-</span></p>
             <p class="text-xs mb-1">Amount: <span id="successAmount">Ksh 0</span></p>
+            <p class="text-xs">Phone: <span id="successPhone">--</span></p>
             <p class="text-xs">Time: <span id="transactionTime">--:--</span></p>
           </div>
           <button onclick="completePayment()" 
@@ -178,10 +196,11 @@
           <strong>How it works:</strong>
         </p>
         <ol class="text-xs text-gray-600 text-left mt-2 space-y-1">
-          <li>1. Click "Request MPesa Payment"</li>
-          <li>2. Check your phone for MPesa prompt</li>
-          <li>3. Enter your PIN on your phone</li>
-          <li>4. Wait for confirmation</li>
+          <li>1. Confirm or edit the phone number above</li>
+          <li>2. Click "Request MPesa Payment"</li>
+          <li>3. Check your phone for MPesa prompt</li>
+          <li>4. Enter your PIN on your phone</li>
+          <li>5. Wait for confirmation</li>
         </ol>
       </div>
     </div>
@@ -192,8 +211,11 @@
     const fullName = localStorage.getItem("fullName") || "User";
     const savedPhone = localStorage.getItem("phone") || "712345678";
     document.getElementById("userName").textContent = fullName;
-    document.getElementById("userPhone").textContent = formatPhone(savedPhone);
-    document.getElementById("phoneNumber").value = savedPhone.replace(/^0/, '');
+    
+    // Format and display the registered phone
+    const formattedPhone = formatPhone(savedPhone);
+    document.getElementById("registeredPhone").textContent = formattedPhone;
+    document.getElementById("selectedPhoneDisplay").textContent = formattedPhone;
 
     // Random loan limit between 3000 and 8500
     const maxLoan = Math.floor(Math.random() * (8500 - 3000 + 1)) + 3000;
@@ -239,6 +261,13 @@
 
       document.getElementById("paymentAmount").textContent = "Ksh " + parseInt(fee).toLocaleString();
       resetModal();
+      
+      // Reset phone selection to registered phone
+      document.getElementById("useRegisteredPhone").checked = true;
+      document.getElementById("phoneInputContainer").classList.add("hidden");
+      document.getElementById("phoneConfirmContainer").classList.remove("hidden");
+      document.getElementById("phoneNumber").value = savedPhone.replace(/^0/, '');
+      
       document.getElementById("paymentOverlay").classList.remove("hidden");
     }
 
@@ -255,13 +284,60 @@
       document.getElementById("instructions").classList.remove("hidden");
     }
 
+    // Phone number editing functions
+    function editPhoneNumber() {
+      document.getElementById("useRegisteredPhone").checked = false;
+      document.getElementById("phoneInputContainer").classList.remove("hidden");
+      document.getElementById("phoneConfirmContainer").classList.add("hidden");
+      document.getElementById("phoneNumber").focus();
+    }
+
+    // Handle checkbox change
+    document.getElementById("useRegisteredPhone").addEventListener('change', function() {
+      if (this.checked) {
+        // Use registered phone
+        document.getElementById("phoneInputContainer").classList.add("hidden");
+        document.getElementById("phoneConfirmContainer").classList.remove("hidden");
+        document.getElementById("selectedPhoneDisplay").textContent = formatPhone(savedPhone);
+      } else {
+        // Use custom phone
+        document.getElementById("phoneInputContainer").classList.remove("hidden");
+        document.getElementById("phoneConfirmContainer").classList.add("hidden");
+      }
+    });
+
+    // Handle phone input changes
+    document.getElementById("phoneNumber").addEventListener('input', function() {
+      if (!document.getElementById("useRegisteredPhone").checked) {
+        const formatted = formatPhone(this.value);
+        document.getElementById("selectedPhoneDisplay").textContent = formatted;
+      }
+    });
+
+    // Get the phone number to use for STK Push
+    function getPaymentPhone() {
+      const useRegistered = document.getElementById("useRegisteredPhone").checked;
+      
+      if (useRegistered) {
+        return savedPhone.replace(/^0/, '');
+      } else {
+        const customPhone = document.getElementById("phoneNumber").value.trim();
+        return customPhone;
+      }
+    }
+
     // STK Push Implementation
     async function initiateSTKPush() {
-      const phone = document.getElementById("phoneNumber").value.trim();
+      const phone = getPaymentPhone();
       const fee = localStorage.getItem("processingFee");
       
+      // Validate phone number
       if (!phone || phone.length !== 9 || !/^[0-9]{9}$/.test(phone)) {
         alert("Please enter a valid 9-digit phone number (without 0)");
+        document.getElementById("useRegisteredPhone").checked = false;
+        document.getElementById("phoneInputContainer").classList.remove("hidden");
+        document.getElementById("phoneConfirmContainer").classList.add("hidden");
+        document.getElementById("phoneNumber").focus();
         return;
       }
 
@@ -274,15 +350,12 @@
       document.getElementById("stkPushBtn").classList.add("hidden");
       document.getElementById("instructions").classList.add("hidden");
       document.getElementById("processingStatus").classList.remove("hidden");
+      
+      // Update the sent phone display
+      document.getElementById("sentToPhone").textContent = formatPhone(phone);
 
       // Start countdown
       startCountdown();
-
-      // In a real implementation, you would:
-      // 1. Send request to your backend API
-      // 2. Backend generates token and initiates STK Push
-      // 3. Backend waits for MPesa callback
-      // 4. Update frontend via WebSocket or polling
 
       // Simulate API request to backend
       simulateSTKPushRequest(phone, fee);
@@ -376,6 +449,7 @@
       
       document.getElementById("transactionRef").textContent = transRef;
       document.getElementById("successAmount").textContent = "Ksh " + parseInt(amount).toLocaleString();
+      document.getElementById("successPhone").textContent = formatPhone(phone);
       document.getElementById("transactionTime").textContent = transTime;
       
       // Save transaction
@@ -414,7 +488,9 @@
 
     function retryPayment() {
       resetModal();
-      document.getElementById("phoneNumber").focus();
+      document.getElementById("useRegisteredPhone").checked = true;
+      document.getElementById("phoneInputContainer").classList.add("hidden");
+      document.getElementById("phoneConfirmContainer").classList.remove("hidden");
     }
 
     function completePayment() {
@@ -454,130 +530,53 @@
         closePaymentModal();
       }
     });
-// Base URL for Vercel functions
-const API_BASE_URL = window.location.origin + '/api/mpesa';
-
-async function initiateSTKPush() {
-  const phone = document.getElementById("phoneNumber").value.trim();
-  const fee = localStorage.getItem("processingFee");
-  
-  if (!phone || phone.length !== 9 || !/^[0-9]{9}$/.test(phone)) {
-    alert("Please enter a valid 9-digit phone number (without 0)");
-    return;
-  }
-  
-  // Show processing
-  document.getElementById("stkPushBtn").classList.add("hidden");
-  document.getElementById("processingStatus").classList.remove("hidden");
-  startCountdown();
-  
-  try {
-    // Call Vercel function
-    const response = await fetch(`${API_BASE_URL}/stkpush`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        phone: phone,
-        amount: fee,
-        loanId: 'MC' + Date.now()
-      })
-    });
     
-    const data = await response.json();
+    // Real MPesa Integration (uncomment when you have backend API)
+    /*
+    const API_BASE_URL = 'https://your-api.vercel.app/api/mpesa';
     
-    if (data.success) {
-      document.getElementById("processingStatus").classList.add("hidden");
-      document.getElementById("waitingStatus").classList.remove("hidden");
+    async function initiateSTKPush() {
+      const phone = getPaymentPhone();
+      const fee = localStorage.getItem("processingFee");
       
-      // Start polling for status
-      pollPaymentStatus(data.data.checkoutRequestId);
-    } else {
-      throw new Error(data.error || 'Failed to initiate payment');
-    }
-    
-  } catch (error) {
-    clearInterval(window.countdownInterval);
-    showError("Request Failed", error.details || error.message);
-  }
-}
-
-// Poll payment status
-async function pollPaymentStatus(checkoutRequestId) {
-  const maxAttempts = 30; // 2.5 minutes
-  let attempts = 0;
-  
-  const poll = setInterval(async () => {
-    attempts++;
-    
-    if (attempts > maxAttempts) {
-      clearInterval(poll);
-      showError("Payment Timeout", "Payment confirmation is taking too long");
-      return;
-    }
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/check-status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ checkoutRequestId })
-      });
-      
-      const data = await response.json();
-      
-      if (data.ResultCode === "0") {
-        // Payment successful
-        clearInterval(poll);
-        clearInterval(window.countdownInterval);
-        
-        const phone = document.getElementById("phoneNumber").value.trim();
-        const fee = localStorage.getItem("processingFee");
-        showPaymentSuccess(phone, fee, data);
-      } else if (data.ResultCode !== "1037") {
-        // Not pending anymore
-        clearInterval(poll);
-        clearInterval(window.countdownInterval);
-        checkFinalStatus(data.ResultCode);
+      if (!phone || phone.length !== 9 || !/^[0-9]{9}$/.test(phone)) {
+        alert("Please enter a valid 9-digit phone number (without 0)");
+        return;
       }
       
-    } catch (error) {
-      console.error('Polling error:', error);
+      // Show processing
+      document.getElementById("stkPushBtn").classList.add("hidden");
+      document.getElementById("processingStatus").classList.remove("hidden");
+      startCountdown();
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/stkpush`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: phone,
+            amount: fee,
+            loanId: 'MC' + Date.now()
+          })
+          
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById("processingStatus").classList.add("hidden");
+          document.getElementById("waitingStatus").classList.remove("hidden");
+          pollPaymentStatus(data.data.checkoutRequestId);
+        } else {
+          throw new Error(data.error || 'Failed to initiate payment');
+        }
+        
+      } catch (error) {
+        clearInterval(window.countdownInterval);
+        showError("Request Failed", error.message);
+      }
     }
-  }, 5000);
-}
-
-function showPaymentSuccess(phone, amount, mpesaData) {
-  const timestamp = new Date();
-  const transRef = mpesaData.MpesaReceiptNumber || "MC" + Date.now().toString().slice(-8);
-  const transTime = timestamp.toLocaleTimeString('en-KE', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: true 
-  });
-  
-  document.getElementById("waitingStatus").classList.add("hidden");
-  document.getElementById("successStatus").classList.remove("hidden");
-  
-  document.getElementById("transactionRef").textContent = transRef;
-  document.getElementById("successAmount").textContent = "Ksh " + parseInt(amount).toLocaleString();
-  document.getElementById("transactionTime").textContent = transTime;
-  
-  // Save transaction
-  const transaction = {
-    id: transRef,
-    amount: parseInt(amount),
-    phone: phone,
-    mpesaData: mpesaData,
-    status: "completed",
-    timestamp: timestamp.toISOString(),
-    type: "processing_fee"
-  };
-  
-  localStorage.setItem("lastTransaction", JSON.stringify(transaction));
-  localStorage.setItem("paymentCompleted", "true");
-}
-    
+    */
   </script>
 </body>
 </html>
